@@ -4,7 +4,6 @@ A premium, interactive personal portfolio showcasing graphic design and web deve
 
 ## 🌟 Key Features
 - **Dynamic Project Gallery**: Interactive filters for Esports Banners, Social Media Designs, and Web Projects.
-- **Role-Based Project Previews**: Detailed modals for key web applications (Event Management, To-Do List).
 - **Typewriter Integration**: Smooth animations for personal titles.
 - **Centralized Social Management**: Links are automatically updated globally via `Social Links.txt`.
 - **Glassmorphic Design**: Modern, translucent UI with vibrant background glowing effects.
