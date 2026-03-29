@@ -1,4 +1,4 @@
-# Portfolio Website - Ayush Maharzan
+# Portfolio Website - Ajit Maharjan
 
 A premium, interactive personal portfolio showcasing graphic design and web development work.
 
