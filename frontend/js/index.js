@@ -119,7 +119,7 @@ tabs.forEach(tab => {
 
 // Typewriter Effect logic
 const typewriterElement = document.getElementById('typewriter');
-const titles = ['Graphics Designer.', 'Front end developer.'];
+const titles = ['Graphics Designer.', 'Web developer.'];
 let titleIndex = 0;
 let charIndex = 0;
 let isDeleting = false;
