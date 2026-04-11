@@ -294,14 +294,21 @@
                         </div>
                     </div>
                     <form id="contact-form" class="contact-form"
-                        style="display: flex; flex-direction: column; gap: 20px;">
-                        <input type="text" name="name" id="contact-name" placeholder="Name" required
-                            style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; color: #fff; outline: none;">
-                        <input type="email" name="email" id="contact-email" placeholder="Email" required
-                            style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; color: #fff; outline: none;">
-                        <textarea name="message" id="contact-message" placeholder="Message" rows="5" required
-                            style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; color: #fff; outline: none; resize: none;"></textarea>
-                        <div id="form-status" style="margin-top: 10px; font-size: 0.9rem; border-radius: 8px;"></div>
+                        style="display: flex; flex-direction: column; gap: 15px;">
+                        <div class="form-group">
+                            <input type="text" name="name" id="contact-name" placeholder="Name" required>
+                            <span class="error-msg" id="name-error"></span>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" name="email" id="contact-email" placeholder="Email" required>
+                            <span class="error-msg" id="email-error"></span>
+                        </div>
+                        <div class="form-group">
+                            <textarea name="message" id="contact-message" placeholder="Message" rows="5"
+                                required></textarea>
+                            <span class="error-msg" id="message-error"></span>
+                        </div>
+                        <div id="form-status" style="margin-top: 0px; font-size: 0.9rem; border-radius: 8px;"></div>
                         <button type="submit" id="contact-submit" class="btn-contact"
                             style="width: fit-content; cursor: pointer;">Send Message</button>
                     </form>

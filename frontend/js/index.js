@@ -291,7 +291,6 @@ loadSocialLinks();
 
 (function () {
     // IMPORTANT: Replace these with your own EmailJS details
-    // You can get these from your EmailJS dashboard: https://dashboard.emailjs.com/
     const PUBLIC_KEY = "WY3fDUUpfojnXZtMB"; // Your Public Key
     const SERVICE_ID = "service_vv4r8ut"; // Your Service ID
     const TEMPLATE_ID = "template_tejbbm9"; // Your Template ID
@@ -303,36 +302,97 @@ loadSocialLinks();
     const formStatus = document.getElementById('form-status');
     const submitBtn = document.getElementById('contact-submit');
 
+    const nameInput = document.getElementById('contact-name');
+    const emailInput = document.getElementById('contact-email');
+    const messageInput = document.getElementById('contact-message');
+
+    const nameError = document.getElementById('name-error');
+    const emailError = document.getElementById('email-error');
+    const messageError = document.getElementById('message-error');
+
+    // --- Validation Logic ---
+
+    // Sanitize input to prevent basic script injection
+    function sanitize(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // Validation Functions
+    const validators = {
+        name: (val) => {
+            const nameRegex = /^[A-Za-z\s]+$/;
+            if (!val.trim()) return "Name is required.";
+            if (val.trim().length < 2) return "Name must be at least 2 characters.";
+            if (!nameRegex.test(val.trim())) return "Name should only contain letters.";
+            return "";
+        },
+        email: (val) => {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!val.trim()) return "Email is required.";
+            if (!emailRegex.test(val.trim())) return "Please enter a valid email address.";
+            return "";
+        },
+        message: (val) => {
+            if (!val.trim()) return "Message is required.";
+            if (val.trim().length < 5) return "Message must be at least 5 characters.";
+            if (/^\d+$/.test(val.trim())) return "Message cannot be just numbers.";
+            return "";
+        }
+    };
+
+    function validateField(input, errorSpan, validator) {
+        const errorMessage = validator(input.value);
+        if (errorMessage) {
+            input.classList.add('invalid-field');
+            errorSpan.textContent = errorMessage;
+            errorSpan.classList.add('show');
+            return false;
+        } else {
+            input.classList.remove('invalid-field');
+            errorSpan.classList.remove('show');
+            return true;
+        }
+    }
+
+    // --- Event Listeners ---
+
     if (contactForm) {
+        // Real-time validation
+        nameInput.addEventListener('input', () => validateField(nameInput, nameError, validators.name));
+        nameInput.addEventListener('blur', () => validateField(nameInput, nameError, validators.name));
+
+        emailInput.addEventListener('input', () => validateField(emailInput, emailError, validators.email));
+        emailInput.addEventListener('blur', () => validateField(emailInput, emailError, validators.email));
+
+        messageInput.addEventListener('input', () => validateField(messageInput, messageError, validators.message));
+        messageInput.addEventListener('blur', () => validateField(messageInput, messageError, validators.message));
+
+        // Submit validation
         contactForm.addEventListener('submit', function (event) {
             event.preventDefault();
 
-            // Basic Validation
-            const name = document.getElementById('contact-name').value.trim();
-            const email = document.getElementById('contact-email').value.trim();
-            const message = document.getElementById('contact-message').value.trim();
+            // Run all validations
+            const isNameValid = validateField(nameInput, nameError, validators.name);
+            const isEmailValid = validateField(emailInput, emailError, validators.email);
+            const isMessageValid = validateField(messageInput, messageError, validators.message);
 
-            if (!name || !email || !message) {
-                showStatus("Please fill in all fields.", "error");
+            if (!isNameValid || !isEmailValid || !isMessageValid) {
+                showStatus("Please fix the errors before submitting.", "error");
                 return;
             }
 
-            // Email format validation
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                showStatus("Please enter a valid email address.", "error");
-                return;
-            }
+            // Sanitize values
+            const name = sanitize(nameInput.value.trim());
+            const email = sanitize(emailInput.value.trim());
+            const message = sanitize(messageInput.value.trim());
 
             // Change button state
             submitBtn.disabled = true;
             submitBtn.textContent = "Sending...";
             showStatus("Sending your message...", "info");
 
-            // Send via EmailJS
-            // We pass an object with the values if we want specific custom ones, 
-            // or just 'this' to send the whole form. 
-            // Since you have {{title}} in your subject, let's ensure it's sent:
             const templateParams = {
                 name: name,
                 email: email,
@@ -346,6 +406,9 @@ loadSocialLinks();
                     contactForm.reset();
                     submitBtn.disabled = false;
                     submitBtn.textContent = "Send Message";
+
+                    // Clear error classes
+                    [nameInput, emailInput, messageInput].forEach(el => el.classList.remove('invalid-field'));
 
                     // Clear success message after 5 seconds
                     setTimeout(() => {
@@ -368,7 +431,7 @@ loadSocialLinks();
         formStatus.textContent = message;
         formStatus.style.display = "block";
         formStatus.style.padding = "10px";
-        formStatus.style.marginBottom = "10px";
+        formStatus.style.marginBottom = "15px";
 
         if (type === "success") {
             formStatus.style.color = "#00ff00";

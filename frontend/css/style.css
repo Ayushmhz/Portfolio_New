@@ -970,3 +970,48 @@ section {
         grid-template-columns: 1fr;
     }
 }
+
+/* Contact Form Validation Styles */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    width: 100%;
+}
+
+.error-msg {
+    color: #ff4d4d;
+    font-size: 0.8rem;
+    min-height: 18px;
+    transition: 0.3s;
+    opacity: 0;
+    transform: translateY(-5px);
+}
+
+.error-msg.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.invalid-field {
+    border-color: #ff4d4d !important;
+    box-shadow: 0 0 10px rgba(255, 77, 77, 0.2);
+}
+
+.contact-form input, 
+.contact-form textarea {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    border-radius: 8px;
+    color: #fff;
+    outline: none;
+    font-family: inherit;
+    transition: 0.3s;
+}
+
+.contact-form input:focus, 
+.contact-form textarea:focus {
+    border-color: var(--yellow-accent) !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+}
