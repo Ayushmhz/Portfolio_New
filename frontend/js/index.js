@@ -227,6 +227,18 @@ window.onclick = function (event) {
 // Global hook for the "Open" button
 window.openProject = openProject;
 
+// Certificate Modal function
+window.openCertificate = function (imageSrc, title) {
+    modalBody.innerHTML = `
+        <div style="padding: 40px; text-align: center;">
+            <h2 style="color: #fff; margin-bottom: 20px; font-weight: 700;">${title}</h2>
+            <img src="${imageSrc}" alt="${title}" style="max-width: 100%; max-height: 70vh; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); object-fit: contain;">
+        </div>
+    `;
+    modal.style.display = "block";
+    document.body.style.overflow = "hidden";
+}
+
 // Initial Run
 populateGallery();
 type();
