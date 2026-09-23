@@ -1,5 +1,11 @@
-// Initialize Lucide icons
-lucide.createIcons();
+// Initialize Lucide icons safely
+if (typeof lucide !== 'undefined' && lucide.createIcons) {
+    try {
+        lucide.createIcons();
+    } catch (e) {
+        console.warn('Lucide icon initialization skipped:', e);
+    }
+}
 
 // Image Data Mapping - Paths relative to Portfolio_Website location
 const portfolioData = [
@@ -99,9 +105,11 @@ function populateGallery(category = 'all') {
             </div>
         `;
 
+        galleryItem.style.cursor = "pointer";
         if (item.projectId) {
-            galleryItem.style.cursor = "pointer";
             galleryItem.onclick = () => openProject(item.projectId);
+        } else {
+            galleryItem.onclick = () => openImageLightbox(item.src, item.title);
         }
 
         galleryContainer.appendChild(galleryItem);
@@ -185,7 +193,7 @@ function openProject(projectId) {
     if (!project) return;
 
     modalBody.innerHTML = `
-        <div class="modal-header-img">
+        <div class="modal-header-img" onclick="openImageLightbox('${project.coverSrc}', '${project.title}')" style="cursor: pointer;" title="Click to view fullscreen">
             <img src="${project.coverSrc}" alt="${project.title} Cover">
         </div>
         <div class="modal-body-content">
@@ -199,7 +207,7 @@ function openProject(projectId) {
             <h4 class="modal-section-label">System Previews</h4>
             <div class="modal-shot-grid">
                 ${project.screenshots.map(src => `
-                    <div class="modal-shot-item">
+                    <div class="modal-shot-item" onclick="openImageLightbox('${src}', '${project.title} Preview')" style="cursor: pointer;" title="Click to view fullscreen">
                         <img src="${src}" alt="Screenshot">
                     </div>
                 `).join('')}
@@ -224,6 +232,123 @@ window.onclick = function (event) {
     }
 }
 
+// Reusable Fullscreen Image Lightbox
+function openImageLightbox(src, alt) {
+    let lb = document.getElementById("imageLightbox");
+    let lbImg = document.getElementById("lightboxImage");
+    
+    if (!lb) {
+        lb = document.createElement("div");
+        lb.id = "imageLightbox";
+        lb.style.cssText = "display: none; position: fixed; z-index: 99999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; cursor: pointer;";
+        lb.innerHTML = `
+            <span id="closeLightboxBtn" style="position: absolute; top: 25px; right: 30px; color: #fff; font-size: 38px; font-weight: 300; cursor: pointer; z-index: 100000; width: 48px; height: 48px; background: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); transition: 0.3s; line-height: 1;">&times;</span>
+            <img id="lightboxImage" src="" alt="Project Preview" style="max-width: 90vw; max-height: 90vh; width: auto; height: auto; object-fit: contain; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); user-select: none; cursor: default;">
+        `;
+        document.body.appendChild(lb);
+        lbImg = document.getElementById("lightboxImage");
+    }
+    
+    if (!lbImg) return;
+    lbImg.src = encodeURI(src);
+    lbImg.alt = alt || "Project Preview";
+    lb.style.display = "flex";
+    document.body.style.overflow = "hidden";
+}
+
+function closeImageLightbox() {
+    const lb = document.getElementById("imageLightbox");
+    if (lb) {
+        lb.style.display = "none";
+    }
+    if (!modal || modal.style.display !== "block") {
+        document.body.style.overflow = "auto";
+    }
+}
+
+window.openImageLightbox = openImageLightbox;
+window.closeImageLightbox = closeImageLightbox;
+
+// Document-level event delegation for all project image clicks and lightbox closing
+document.addEventListener("click", function (e) {
+    // 1. Close button clicked
+    if (e.target && (e.target.id === "closeLightboxBtn" || e.target.closest("#closeLightboxBtn"))) {
+        e.preventDefault();
+        e.stopPropagation();
+        closeImageLightbox();
+        return;
+    }
+
+    // 2. Clicked outside the enlarged image on the dark overlay
+    const lb = document.getElementById("imageLightbox");
+    if (lb && lb.style.display === "flex") {
+        const lbImg = document.getElementById("lightboxImage");
+        if (e.target === lb || (lb.contains(e.target) && e.target !== lbImg)) {
+            closeImageLightbox();
+            return;
+        }
+    }
+
+    // 3. Clicked on a featured project image in the Projects section
+    const featuredImg = e.target.closest("#featured .featured-img");
+    if (featuredImg) {
+        e.preventDefault();
+        const img = featuredImg.querySelector("img") || (featuredImg.tagName === "IMG" ? featuredImg : null);
+        if (img) {
+            const card = featuredImg.closest(".featured-card");
+            const titleEl = card ? card.querySelector(".featured-title") : null;
+            const title = titleEl ? titleEl.textContent.trim() : (img.alt || "Project Preview");
+            const src = img.getAttribute("src") || img.src;
+            openImageLightbox(src, title);
+        }
+        return;
+    }
+
+    // 4. Clicked on a screenshot in the project modal
+    const modalShot = e.target.closest(".modal-shot-item, .modal-header-img");
+    if (modalShot) {
+        const img = modalShot.querySelector("img") || (modalShot.tagName === "IMG" ? modalShot : null);
+        if (img) {
+            const src = img.getAttribute("src") || img.src;
+            const alt = img.alt || "Project Preview";
+            openImageLightbox(src, alt);
+        }
+        return;
+    }
+
+    // 5. Clicked on any gallery item in the Creative Gallery (Esports, Social Media, Thumbnails)
+    const galleryItem = e.target.closest(".gallery-item");
+    if (galleryItem) {
+        const clickToOpen = galleryItem.querySelector(".gallery-overlay");
+        if (clickToOpen && clickToOpen.textContent.includes("CLICK TO OPEN")) {
+            // Handled by openProject
+            return;
+        }
+        e.preventDefault();
+        const img = galleryItem.querySelector("img");
+        if (img) {
+            const titleEl = galleryItem.querySelector("h4");
+            const title = titleEl ? titleEl.textContent.trim() : (img.alt || "Gallery Preview");
+            const src = img.getAttribute("src") || img.src;
+            openImageLightbox(src, title);
+        }
+        return;
+    }
+});
+
+// Escape key listener for lightbox and modal
+document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" || e.key === "Esc") {
+        const lb = document.getElementById("imageLightbox");
+        if (lb && lb.style.display === "flex") {
+            closeImageLightbox();
+        } else if (modal && modal.style.display === "block") {
+            modal.style.display = "none";
+            document.body.style.overflow = "auto";
+        }
+    }
+});
+
 // Global hook for the "Open" button
 window.openProject = openProject;
 
@@ -238,6 +363,11 @@ window.openCertificate = function (imageSrc, title) {
     `;
     modal.style.display = "block";
     document.body.style.overflow = "hidden";
+}
+
+// Gallery Image Modal function (unified with fullscreen lightbox)
+window.openGalleryImage = function (imageSrc, title) {
+    openImageLightbox(imageSrc, title);
 }
 
 // Initial Run
@@ -308,8 +438,14 @@ loadSocialLinks();
     const SERVICE_ID = "service_vv4r8ut"; // Your Service ID
     const TEMPLATE_ID = "template_tejbbm9"; // Your Template ID
 
-    // Initialize EmailJS
-    emailjs.init(PUBLIC_KEY);
+    // Initialize EmailJS safely
+    if (typeof emailjs !== 'undefined' && emailjs.init) {
+        try {
+            emailjs.init(PUBLIC_KEY);
+        } catch (e) {
+            console.warn('EmailJS initialization skipped:', e);
+        }
+    }
 
     const contactForm = document.getElementById('contact-form');
     const formStatus = document.getElementById('form-status');
