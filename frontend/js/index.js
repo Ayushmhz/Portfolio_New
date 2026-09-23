@@ -91,6 +91,8 @@ function populateGallery(category = 'all') {
     filteredContent.forEach(item => {
         const galleryItem = document.createElement('div');
         galleryItem.className = 'gallery-item';
+        galleryItem.setAttribute('data-src', item.src);
+        galleryItem.setAttribute('data-title', item.title);
 
         // Encode URI spaces and special characters
         const safeSrc = encodeURI(item.src);
@@ -250,11 +252,21 @@ function openImageLightbox(src, alt) {
     }
     
     if (!lbImg) return;
+    
+    let finalSrc = src;
     try {
-        lbImg.src = encodeURI(decodeURI(src));
+        finalSrc = encodeURI(decodeURI(src));
     } catch (e) {
-        lbImg.src = src;
+        finalSrc = src;
     }
+
+    lbImg.onerror = function () {
+        if (lbImg.src !== src) {
+            lbImg.src = src;
+        }
+    };
+
+    lbImg.src = finalSrc;
     lbImg.alt = alt || "Project Preview";
     lb.style.display = "flex";
     document.body.style.overflow = "hidden";
@@ -329,6 +341,12 @@ document.addEventListener("click", function (e) {
             return;
         }
         e.preventDefault();
+        const rawSrc = galleryItem.getAttribute("data-src");
+        const rawTitle = galleryItem.getAttribute("data-title");
+        if (rawSrc) {
+            openImageLightbox(rawSrc, rawTitle || "Gallery Preview");
+            return;
+        }
         const img = galleryItem.querySelector("img");
         if (img) {
             const titleEl = galleryItem.querySelector("h4");
@@ -367,7 +385,7 @@ window.openCertificate = function (imageSrc, title) {
     modalBody.innerHTML = `
         <div style="padding: 40px; text-align: center;">
             <h2 style="color: #fff; margin-bottom: 20px; font-weight: 700;">${title}</h2>
-            <img src="${safeSrc}" alt="${title}" style="max-width: 100%; max-height: 70vh; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); object-fit: contain;">
+            <img src="${safeSrc}" alt="${title}" onclick="openImageLightbox('${safeSrc}', '${title}')" style="max-width: 100%; max-height: 70vh; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); object-fit: contain; cursor: pointer;" title="Click to view fullscreen">
         </div>
     `;
     modal.style.display = "block";
