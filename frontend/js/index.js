@@ -250,7 +250,11 @@ function openImageLightbox(src, alt) {
     }
     
     if (!lbImg) return;
-    lbImg.src = encodeURI(src);
+    try {
+        lbImg.src = encodeURI(decodeURI(src));
+    } catch (e) {
+        lbImg.src = src;
+    }
     lbImg.alt = alt || "Project Preview";
     lb.style.display = "flex";
     document.body.style.overflow = "hidden";
@@ -354,7 +358,12 @@ window.openProject = openProject;
 
 // Certificate Modal function
 window.openCertificate = function (imageSrc, title) {
-    const safeSrc = encodeURI(imageSrc);
+    let safeSrc = imageSrc;
+    try {
+        safeSrc = encodeURI(decodeURI(imageSrc));
+    } catch (e) {
+        safeSrc = imageSrc;
+    }
     modalBody.innerHTML = `
         <div style="padding: 40px; text-align: center;">
             <h2 style="color: #fff; margin-bottom: 20px; font-weight: 700;">${title}</h2>
